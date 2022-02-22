@@ -95,6 +95,19 @@ export default class PinchZoomPan extends React.Component {
         }
     }
 
+    touchMoveCallback = (event) => {
+        // Touchmove callback function
+        const touchAction = this.controlOverscrollViaCss
+        ? browserPanActions(this.state) || 'none'
+        : undefined;
+
+        if(touchAction == "none" || touchAction == "pan-up" || touchAction == "pan-down") {
+            this.props.onTouchMove(event,true);
+        } else {
+            this.props.onTouchMove(event,false);
+        }
+    }
+
     handleTouchMove = event => {
         const touches = event.touches;
         if (touches.length === 2) {
@@ -106,16 +119,7 @@ export default class PinchZoomPan extends React.Component {
         else if (touches.length === 1) {
             const requestedPan = this.pan(touches[0]);
 
-            // Touchmove callback function
-            const touchAction = this.controlOverscrollViaCss
-            ? browserPanActions(this.state) || 'none'
-            : undefined;
-
-            if(touchAction == "none" || touchAction == "pan-up" || touchAction == "pan-down") {
-                this.props.onTouchMove(event,true);
-            } else {
-                this.props.onTouchMove(event,false);
-            }
+            this.touchMoveCallback(event);
 
             if (!this.controlOverscrollViaCss) {
                 //let the browser handling panning if we are at the edge of the image in 
@@ -172,6 +176,7 @@ export default class PinchZoomPan extends React.Component {
     handleMouseMove = event => {
         if (!event.buttons) return null;
         this.pan(event)
+        this.touchMoveCallback(event);
     }
 
     handleMouseDoubleClick = event => {
