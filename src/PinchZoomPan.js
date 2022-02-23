@@ -68,7 +68,7 @@ const browserPanActions = createSelector(
 //Ensure the image is not over-panned, and not over- or under-scaled.
 //These constraints must be checked when image changes, and when container is resized.
 export default class PinchZoomPan extends React.Component {
-    state = {};
+    state = {containerDimensions: undefined,imageDimensions: undefined};
 
     lastPointerUpTimeStamp; //enables detecting double-tap
     lastPanPointerPosition; //helps determine how far to pan the image
@@ -186,18 +186,20 @@ export default class PinchZoomPan extends React.Component {
     }
 
     handleMouseWheel = event => {
-        this.cancelAnimation();
-        const point = getRelativePosition(event, this.imageRef.parentNode);
-        this.props.isControlledZoom && this.setThreshold();
-        if (event.deltaY > 0) {
-            if (this.state.scale > getMinScale(this.state, this.props)) {
-                this.zoomOut(point);
-                tryCancelEvent(event);
-            }
-        } else if (event.deltaY < 0) {
-            if (this.state.scale < this.props.maxScale) {
-                this.zoomIn(point);
-                tryCancelEvent(event);
+        if(this.props.enableOnWheel) {
+            this.cancelAnimation();
+            const point = getRelativePosition(event, this.imageRef.parentNode);
+            this.props.isControlledZoom && this.setThreshold();
+            if (event.deltaY > 0) {
+                if (this.state.scale > getMinScale(this.state, this.props)) {
+                    this.zoomOut(point);
+                    tryCancelEvent(event);
+                }
+            } else if (event.deltaY < 0) {
+                if (this.state.scale < this.props.maxScale) {
+                    this.zoomIn(point);
+                    tryCancelEvent(event);
+                }
             }
         }
     }
@@ -553,7 +555,7 @@ export default class PinchZoomPan extends React.Component {
         };
 
         return (
-            <div style={containerStyle}>
+            <div style={containerStyle} className={this.props.className}>
                 {zoomButtons && this.isImageReady && this.isTransformInitialized && <ZoomButtons 
                     scale={scale} 
                     minScale={getMinScale(this.state, this.props)} 
@@ -602,6 +604,9 @@ export default class PinchZoomPan extends React.Component {
 
     componentDidUpdate(prevProps, prevState) {
         this.maybeHandleDimensionsChanged();
+        if(prevProps.resetScale != this.props.resetScale) {
+            this.state.containerDimensions && this.applyInitialTransform();
+        }
     }
 
     componentWillUnmount() {
@@ -618,8 +623,8 @@ export default class PinchZoomPan extends React.Component {
         return isInitialized(this.state.top, this.state.left, this.state.scale);
     }
 
-    get controlOverscrollViaCss() {
-        return window.CSS && window.CSS.supports('touch-action', 'pan-up');
+    controlOverscrollViaCss() {
+        return window && window.CSS && window.CSS.supports('touch-action', 'pan-up');
     }
 
     calculateNegativeSpace(scale) {
@@ -656,6 +661,8 @@ PinchZoomPan.defaultProps = {
     isControlledZoom: false,
     animationSpeed: 0.3,
     threshold: 1.5,
+    resetScale: false,
+    enableOnWheel: false,
 };
 
 PinchZoomPan.propTypes = {
@@ -678,4 +685,6 @@ PinchZoomPan.propTypes = {
     animationSpeed: PropTypes.number,
     threshold: PropTypes.number,
     onTouchMove: PropTypes.func,
+    resetScale: PropTypes.bool,
+    enableOnWheel: PropTypes.bool,
 };
