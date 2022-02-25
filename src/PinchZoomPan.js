@@ -102,9 +102,9 @@ export default class PinchZoomPan extends React.Component {
         : undefined;
 
         if(touchAction == "none" || touchAction == "pan-up" || touchAction == "pan-down") {
-            this.props.onTouchMove(event,true);
+            this.props.onTouchMove && this.props.onTouchMove(event,true);
         } else {
-            this.props.onTouchMove(event,false);
+            this.props.onTouchMove && this.props.onTouchMove(event,false);
         }
     }
 
@@ -229,12 +229,12 @@ export default class PinchZoomPan extends React.Component {
 
     setThreshold = () => {
         const { maxScale, threshold } = this.props;
-        if(this.state.scale <= threshold ) {
+        if(this.state.scale < threshold ) {
             this.setState({
                 nextZoom: threshold,
             })
         }
-        else if (this.state.scale > threshold && this.state.scale < maxScale) {
+        else if (this.state.scale >= threshold && this.state.scale < maxScale) {
             this.setState({
                 nextZoom: maxScale,
             })
@@ -654,12 +654,12 @@ export default class PinchZoomPan extends React.Component {
 PinchZoomPan.defaultProps = {
     initialScale: 'auto',
     minScale: 'auto',
-    maxScale: 1,
+    maxScale: 2,
     position: 'topLeft',
     zoomButtons: true,
     doubleTapBehavior: 'reset',
     isControlledZoom: false,
-    animationSpeed: 0.3,
+    animationSpeed: 0.4,
     threshold: 1.5,
     resetScale: false,
     enableOnWheel: false,
