@@ -675,10 +675,6 @@ PinchZoomPan.defaultProps = {
     threshold: 1.5,
     resetScale: false,
     enableOnWheel: false,
-    onTouchMove: null,
-    onPinch: null,
-    onMouseWheel: null,
-    onDoubleClick: null,
 };
 
 PinchZoomPan.propTypes = {
