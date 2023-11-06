@@ -295,10 +295,11 @@ export default class PinchZoomPan extends React.Component {
 
     doubleClick(event,pointerPosition) {
         const { doubleTapBehavior, maxScale, threshold, isControlledZoom, onDoubleClick } = this.props;
+        const { scale } = this.state;
         if (String(doubleTapBehavior).toLowerCase() === 'zoom' && this.state.scale * (1 + OVERZOOM_TOLERANCE) < this.props.maxScale) {
             let curScaleValue;
             this.zoomIn(pointerPosition, this.ANIMATION_SPEED, 0.3, true);
-            curScaleValue = this.state.scale < threshold ? threshold : maxScale;
+            curScaleValue = scale < threshold ? threshold : maxScale;
             onDoubleClick && onDoubleClick(event, true, curScaleValue);
             isControlledZoom && this.setState({
                 nextZoom: maxScale,
@@ -554,7 +555,7 @@ export default class PinchZoomPan extends React.Component {
     //lifecycle methods
     render() {
         const childElement = React.Children.only(this.props.children);
-        const { zoomButtons, maxScale, debug, containerStyles } = this.props;
+        const { zoomButtons, maxScale, debug, containerStyle } = this.props;
         const { scale } = this.state;
 
         const touchAction = this.controlOverscrollViaCss
@@ -566,7 +567,7 @@ export default class PinchZoomPan extends React.Component {
             height: '100%',
             overflow: 'hidden',
             touchAction: touchAction,
-            ...containerStyles,
+            ...containerStyle,
         };
 
         return (
@@ -678,7 +679,7 @@ PinchZoomPan.defaultProps = {
     threshold: 1.5,
     resetScale: false,
     enableOnWheel: false,
-    containerStyles: {},
+    containerStyle: {},
     onTouchMove: null,
     onPinch: null,
     onMouseWheel: null,
@@ -707,7 +708,7 @@ PinchZoomPan.propTypes = {
     onTouchMove: PropTypes.func,
     resetScale: PropTypes.bool,
     enableOnWheel: PropTypes.bool,
-    containerStyles: PropTypes.object,
+    containerStyle: PropTypes.object,
     onPinch: PropTypes.func,
     onMouseWheel: PropTypes.func,
     onDoubleClick: PropTypes.func,
