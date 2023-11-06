@@ -21,8 +21,8 @@ export const getPinchMidpoint = ([touch1, touch2], image) => {
     const rect = image.parentNode.getBoundingClientRect();
 
     return {
-        x: (touch1.clientX + touch2.clientX) / 2 - rect.left,
-        y: (touch1.clientY + touch2.clientY) / 2 - rect.top,
+        x: ((touch1.clientX + touch2.clientX) / 2) - rect.left,
+        y: ((touch1.clientY + touch2.clientY) / 2) - rect.top,
     };
 };
 

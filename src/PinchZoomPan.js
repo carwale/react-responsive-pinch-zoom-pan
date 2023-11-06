@@ -297,9 +297,8 @@ export default class PinchZoomPan extends React.Component {
         const { doubleTapBehavior, maxScale, threshold, isControlledZoom, onDoubleClick } = this.props;
         const { scale } = this.state;
         if (String(doubleTapBehavior).toLowerCase() === 'zoom' && this.state.scale * (1 + OVERZOOM_TOLERANCE) < this.props.maxScale) {
-            let curScaleValue;
             this.zoomIn(pointerPosition, this.ANIMATION_SPEED, 0.3, true);
-            curScaleValue = scale < threshold ? threshold : maxScale;
+            const curScaleValue = scale < threshold ? threshold : maxScale;
             onDoubleClick && onDoubleClick(event, true, curScaleValue);
             isControlledZoom && this.setState({
                 nextZoom: maxScale,
