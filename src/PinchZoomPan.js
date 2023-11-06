@@ -295,16 +295,18 @@ export default class PinchZoomPan extends React.Component {
 
     doubleClick(event,pointerPosition) {
         const { doubleTapBehavior, maxScale, threshold, isControlledZoom, onDoubleClick } = this.props;
+        const { scale } = this.state;
         if (String(doubleTapBehavior).toLowerCase() === 'zoom' && this.state.scale * (1 + OVERZOOM_TOLERANCE) < this.props.maxScale) {
             this.zoomIn(pointerPosition, this.ANIMATION_SPEED, 0.3, true);
-            onDoubleClick && onDoubleClick(event,true);
+            const curScaleValue = scale < threshold ? threshold : maxScale;
+            onDoubleClick && onDoubleClick(event, true, curScaleValue);
             isControlledZoom && this.setState({
                 nextZoom: maxScale,
             })
         } else {
             //reset
             this.applyInitialTransform(this.ANIMATION_SPEED);
-            onDoubleClick && onDoubleClick(event,false);
+            onDoubleClick && onDoubleClick(event, false, 1);
             isControlledZoom && this.setState({
                 nextZoom: threshold,
             })
@@ -313,7 +315,7 @@ export default class PinchZoomPan extends React.Component {
 
     pinchChange(event,touches) {
         const length = getPinchLength(touches);
-        const midpoint = getPinchMidpoint(touches);
+        const midpoint = getPinchMidpoint(touches, this.imageRef);
         const scale = this.lastPinchLength
             ? this.state.scale * length / this.lastPinchLength //sometimes we get a touchchange before a touchstart when pinching
             : this.state.scale;
@@ -364,9 +366,9 @@ export default class PinchZoomPan extends React.Component {
 
         if(isPinch && this.props.onPinch) {
             if(requestedScale > this.state.scale) {
-                this.props.onPinch(pinchEvent, true);
+                this.props.onPinch(pinchEvent, true, requestedScale);
             } else {
-                this.props.onPinch(pinchEvent, false);
+                this.props.onPinch(pinchEvent, false, requestedScale);
             }
         }
     }
@@ -552,22 +554,23 @@ export default class PinchZoomPan extends React.Component {
     //lifecycle methods
     render() {
         const childElement = React.Children.only(this.props.children);
-        const { zoomButtons, maxScale, debug } = this.props;
+        const { zoomButtons, maxScale, debug, containerStyle } = this.props;
         const { scale } = this.state;
 
         const touchAction = this.controlOverscrollViaCss
             ? browserPanActions(this.state) || 'none'
             : undefined;
 
-        const containerStyle = {
+        const style = {
             width: '100%', 
             height: '100%',
             overflow: 'hidden',
             touchAction: touchAction,
+            ...containerStyle,
         };
 
         return (
-            <div style={containerStyle} className={this.props.className}>
+            <div style={style} className={this.props.className}>
                 {zoomButtons && this.isImageReady && this.isTransformInitialized && <ZoomButtons 
                     scale={scale} 
                     minScale={getMinScale(this.state, this.props)} 
@@ -675,6 +678,7 @@ PinchZoomPan.defaultProps = {
     threshold: 1.5,
     resetScale: false,
     enableOnWheel: false,
+    containerStyle: {},
     onTouchMove: null,
     onPinch: null,
     onMouseWheel: null,
@@ -703,6 +707,7 @@ PinchZoomPan.propTypes = {
     onTouchMove: PropTypes.func,
     resetScale: PropTypes.bool,
     enableOnWheel: PropTypes.bool,
+    containerStyle: PropTypes.object,
     onPinch: PropTypes.func,
     onMouseWheel: PropTypes.func,
     onDoubleClick: PropTypes.func,
