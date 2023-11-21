@@ -152,11 +152,16 @@ export default class PinchZoomPan extends React.Component {
     }
 
     handleTouchEnd = event => {
+        const { onClick } = this.props;
         this.cancelAnimation();
         if (event.touches.length === 0 && event.changedTouches.length === 1) {
             if (this.lastPointerUpTimeStamp && this.lastPointerUpTimeStamp + DOUBLE_TAP_THRESHOLD > event.timeStamp) {
                 const pointerPosition = getRelativePosition(event.changedTouches[0], this.imageRef.parentNode);
                 this.doubleClick(event, pointerPosition);
+            } else {
+                if (onClick) {
+                    onClick(event);
+                }
             }
             this.lastPointerUpTimeStamp = event.timeStamp;
             tryCancelEvent(event); //suppress mouse events
@@ -679,10 +684,11 @@ PinchZoomPan.defaultProps = {
     resetScale: false,
     enableOnWheel: false,
     containerStyle: {},
-    onTouchMove: null,
-    onPinch: null,
-    onMouseWheel: null,
-    onDoubleClick: null,
+    onTouchMove: () => {},
+    onPinch: () => {},
+    onMouseWheel: () => {},
+    onDoubleClick: () => {},
+    onClick: () => {},
 };
 
 PinchZoomPan.propTypes = {
@@ -711,4 +717,5 @@ PinchZoomPan.propTypes = {
     onPinch: PropTypes.func,
     onMouseWheel: PropTypes.func,
     onDoubleClick: PropTypes.func,
+    onClick: PropTypes.func,
 };
