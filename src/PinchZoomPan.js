@@ -78,6 +78,7 @@ export default class PinchZoomPan extends React.Component {
     isImageLoaded; //permits initial transform
     originalOverscrollBehaviorY; //saves the original overscroll-behavior-y value while temporarily preventing pull down refresh
     ANIMATION_SPEED = this.props.animationSpeed;
+    onClickTimeoutId = null;
 
     //event handlers
     handleTouchStart = event => {
@@ -158,9 +159,12 @@ export default class PinchZoomPan extends React.Component {
             if (this.lastPointerUpTimeStamp && this.lastPointerUpTimeStamp + DOUBLE_TAP_THRESHOLD > event.timeStamp) {
                 const pointerPosition = getRelativePosition(event.changedTouches[0], this.imageRef.parentNode);
                 this.doubleClick(event, pointerPosition);
+                clearTimeout(this.onClickTimeoutId);
             } else {
                 if (onClick) {
-                    onClick(event);
+                    this.onClickTimeoutId = setTimeout(() => {
+                        onClick(event);
+                    }, DOUBLE_TAP_THRESHOLD);
                 }
             }
             this.lastPointerUpTimeStamp = event.timeStamp;
