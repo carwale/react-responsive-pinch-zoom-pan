@@ -163,7 +163,7 @@ export default class PinchZoomPan extends React.Component {
             } else {
                 if (onClick) {
                     this.onClickTimeoutId = setTimeout(() => {
-                        onClick(event);
+                        onClick();
                     }, DOUBLE_TAP_THRESHOLD);
                 }
             }
