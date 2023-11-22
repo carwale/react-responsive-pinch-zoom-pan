@@ -9,7 +9,7 @@ const ControlledContainerView = ({menu, width, height}) => {
         <div>
             <nav>{menu}</nav>
             <main style={{ width: `${width}px`, height: `${height}px` }}>
-                <PinchZoomPan zoomButtons={false} doubleTapBehavior='zoom' debug={false} maxScale={2.5} initialScale={1} minScale={1} isControlledZoom threshold={1.5} onTouchMove={(event,shouldStopPropagation) => shouldStopPropagation ? event.stopPropagation() : null} >
+                <PinchZoomPan zoomButtons={false} doubleTapBehavior='zoom' debug={false} maxScale={2.5} initialScale={1} minScale={1} isControlledZoom threshold={1.5} onTouchMove={(event,shouldStopPropagation) => shouldStopPropagation ? event.stopPropagation() : null} onClick={() => console.log('Clicked!')} >
                 <img alt='Demo Image' src={`https://imgd.aeplcdn.com/310x174/n/cw/ec/35455/venue-exterior-right-front-three-quarter-2.jpeg?q=75`} />
                 </PinchZoomPan>
             </main>
