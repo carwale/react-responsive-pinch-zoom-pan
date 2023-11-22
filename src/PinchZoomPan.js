@@ -79,6 +79,7 @@ export default class PinchZoomPan extends React.Component {
     originalOverscrollBehaviorY; //saves the original overscroll-behavior-y value while temporarily preventing pull down refresh
     ANIMATION_SPEED = this.props.animationSpeed;
     onClickTimeoutId = null;
+    hasMovedImg = false;
 
     //event handlers
     handleTouchStart = event => {
@@ -111,6 +112,7 @@ export default class PinchZoomPan extends React.Component {
 
     handleTouchMove = event => {
         const touches = event.touches;
+        this.hasMovedImg = true;
         if (touches.length === 2) {
             this.pinchChange(event,touches);
 
@@ -152,20 +154,26 @@ export default class PinchZoomPan extends React.Component {
         }
     }
 
-    handleTouchEnd = event => {
+    onClickHandler = () => {
         const { onClick } = this.props;
+
+        if (onClick && !this.hasMovedImg) {
+            this.onClickTimeoutId = setTimeout(() => {
+                onClick();
+            }, DOUBLE_TAP_THRESHOLD);
+        }
+
+        this.hasMovedImg = false;
+    };
+
+    handleTouchEnd = event => {
         this.cancelAnimation();
         if (event.touches.length === 0 && event.changedTouches.length === 1) {
             if (this.lastPointerUpTimeStamp && this.lastPointerUpTimeStamp + DOUBLE_TAP_THRESHOLD > event.timeStamp) {
                 const pointerPosition = getRelativePosition(event.changedTouches[0], this.imageRef.parentNode);
                 this.doubleClick(event, pointerPosition);
-                clearTimeout(this.onClickTimeoutId);
             } else {
-                if (onClick) {
-                    this.onClickTimeoutId = setTimeout(() => {
-                        onClick();
-                    }, DOUBLE_TAP_THRESHOLD);
-                }
+                this.onClickHandler();
             }
             this.lastPointerUpTimeStamp = event.timeStamp;
             tryCancelEvent(event); //suppress mouse events
@@ -184,9 +192,20 @@ export default class PinchZoomPan extends React.Component {
 
     handleMouseMove = event => {
         if (!event.buttons) return null;
+        this.hasMovedImg = true;
         this.pan(event)
         this.touchMoveCallback(event);
     }
+
+    handleMouseUp = event => {
+        const isDoubleTap =
+            this.lastPointerUpTimeStamp &&
+            this.lastPointerUpTimeStamp + DOUBLE_TAP_THRESHOLD >
+                event.timeStamp;
+        if (!isDoubleTap) {
+            this.onClickHandler();
+        }
+    };
 
     handleMouseDoubleClick = event => {
         this.cancelAnimation();
@@ -320,6 +339,7 @@ export default class PinchZoomPan extends React.Component {
                 nextZoom: threshold,
             })
         }
+        clearTimeout(this.onClickTimeoutId);
     }
 
     pinchChange(event,touches) {
@@ -593,6 +613,7 @@ export default class PinchZoomPan extends React.Component {
                     onTouchEnd: this.handleTouchEnd,
                     onMouseDown: this.handleMouseDown,
                     onMouseMove: this.handleMouseMove,
+                    onMouseUp: this.handleMouseUp,
                     onDoubleClick: this.handleMouseDoubleClick,
                     onWheel: this.handleMouseWheel,
                     onDragStart: tryCancelEvent,
