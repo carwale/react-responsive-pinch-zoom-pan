@@ -350,7 +350,7 @@ export default class PinchZoomPan extends React.Component {
             : this.state.scale;
 
             this.props.isControlledZoom && this.setThreshold();
-        this.zoom(scale, midpoint, OVERZOOM_TOLERANCE, true, event);
+        this.zoom(scale, midpoint, OVERZOOM_TOLERANCE, false, event);
 
         this.lastPinchLength = length;
     }
