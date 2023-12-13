@@ -80,12 +80,20 @@ export default class PinchZoomPan extends React.Component {
     ANIMATION_SPEED = this.props.animationSpeed;
     onClickTimeoutId = null;
     hasMovedImg = false;
+    dragCoords = {startX: null, startY: null, endX: null, endY: null, startTime: null, endTime: null};
+
+    initDragCords = (clientX, clientY) => {
+        this.dragCoords.startX = clientX;
+        this.dragCoords.startY = clientY;
+        this.dragCoords.startTime = Date.now();
+    }
 
     //event handlers
     handleTouchStart = event => {
         this.cancelAnimation();
 
         const touches = event.touches;
+        this.initDragCords(touches[0].clientX, touches[0].clientY);
         if (touches.length === 2) {
             this.lastPinchLength = getPinchLength(touches);
             this.lastPanPointerPosition = null;
@@ -110,9 +118,15 @@ export default class PinchZoomPan extends React.Component {
         }
     }
 
+    updateDragCords = (clientX, clientY) => {
+        this.dragCoords.endX = clientX;
+        this.dragCoords.endY = clientY;
+    }
+
     handleTouchMove = event => {
         const touches = event.touches;
         this.hasMovedImg = true;
+        this.updateDragCords(touches[0].clientX, touches[0].clientY);
         if (touches.length === 2) {
             this.pinchChange(event,touches);
 
@@ -166,8 +180,30 @@ export default class PinchZoomPan extends React.Component {
         this.hasMovedImg = false;
     };
 
+    handleDragEnd = () => {
+        this.dragCoords.endTime = Date.now();
+        const { onDragEnd } = this.props;
+        const { startX, endX, startY, endY, startTime, endTime } = this.dragCoords;
+        const deltaX = endX - startX;
+        const deltaY = endY - startY;
+
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        const timeDiff = endTime - startTime;
+        const velocity = distance / timeDiff;
+
+        let horizontalDragDirection = deltaX > 0 ? 'right' : 'left';
+        let verticalDragDirection = deltaY > 0 ? 'down' : 'up';
+
+        if(endX && endY && onDragEnd) {
+            onDragEnd(distance, horizontalDragDirection, verticalDragDirection, velocity);
+        }
+        this.dragCoords.endX = null;
+        this.dragCoords.endY = null;
+    }
+
     handleTouchEnd = event => {
         this.cancelAnimation();
+        this.handleDragEnd();
         if (event.touches.length === 0 && event.changedTouches.length === 1) {
             if (this.lastPointerUpTimeStamp && this.lastPointerUpTimeStamp + DOUBLE_TAP_THRESHOLD > event.timeStamp) {
                 const pointerPosition = getRelativePosition(event.changedTouches[0], this.imageRef.parentNode);
@@ -188,6 +224,7 @@ export default class PinchZoomPan extends React.Component {
     handleMouseDown = event => {
         this.cancelAnimation();
         this.pointerDown(event);
+        this.initDragCords(event.clientX, event.clientY);
     }
 
     handleMouseMove = event => {
@@ -195,6 +232,7 @@ export default class PinchZoomPan extends React.Component {
         this.hasMovedImg = true;
         this.pan(event)
         this.touchMoveCallback(event);
+        this.updateDragCords(event.clientX, event.clientY);
     }
 
     handleMouseUp = event => {
@@ -202,6 +240,7 @@ export default class PinchZoomPan extends React.Component {
             this.lastPointerUpTimeStamp &&
             this.lastPointerUpTimeStamp + DOUBLE_TAP_THRESHOLD >
                 event.timeStamp;
+        this.handleDragEnd();
         if (!isDoubleTap) {
             this.onClickHandler();
         }
@@ -714,6 +753,7 @@ PinchZoomPan.defaultProps = {
     onMouseWheel: () => {},
     onDoubleClick: () => {},
     onClick: () => {},
+    onDragEnd: () => {},
 };
 
 PinchZoomPan.propTypes = {
@@ -743,4 +783,5 @@ PinchZoomPan.propTypes = {
     onMouseWheel: PropTypes.func,
     onDoubleClick: PropTypes.func,
     onClick: PropTypes.func,
+    onDragEnd: PropTypes.func,
 };
