@@ -93,7 +93,7 @@ export default class PinchZoomPan extends React.Component {
         this.cancelAnimation();
 
         const touches = event.touches;
-        this.initDragCords(touches[0].clientX, touches[0].clientX);
+        this.initDragCords(touches[0].clientX, touches[0].clientY);
         if (touches.length === 2) {
             this.lastPinchLength = getPinchLength(touches);
             this.lastPanPointerPosition = null;
