@@ -21,6 +21,7 @@ const imageStyle = createSelector(
         const style = {
             cursor: 'pointer',
         };
+        console.log(`*****Output is :  => imageStyle isInitialized:`, isInitialized(top, left, scale));
         return isInitialized(top, left, scale)
             ? {
                 ...style,
@@ -37,7 +38,8 @@ const imageOverflow = createSelector(
     state => state.imageDimensions,
     state => state.containerDimensions,
     (top, left, scale, imageDimensions, containerDimensions) => { 
-        if (!isInitialized(top, left, scale)) {
+        console.log(`*****Output is :  => imageOverflow isInitialized:`, isInitialized(top, left, scale));
+        if (!isInitialized(top, left, scale) && !imageDimensions && !containerDimensions) {
             return '';
         } 
         return getImageOverflow(top, left, scale, imageDimensions, containerDimensions);
@@ -445,6 +447,7 @@ export default class PinchZoomPan extends React.Component {
     maybeHandleDimensionsChanged() {
         if (this.isImageReady) {
             const containerDimensions = getContainerDimensions(this.imageRef);
+            console.log(`*****Output is :  => PinchZoomPan => maybeHandleDimensionsChanged => containerDimensions:`, containerDimensions, imageDimensions)
             const imageDimensions = getDimensions(this.imageRef);
 
             if (!isEqualDimensions(containerDimensions, getDimensions(this.state.containerDimensions)) || 
@@ -467,7 +470,6 @@ export default class PinchZoomPan extends React.Component {
                         }
                     }
                 );
-                this.debug(`Dimensions changed: Container: ${containerDimensions.width}, ${containerDimensions.height}, Image: ${imageDimensions.width}, ${imageDimensions.height}`);
             }
         }
         else {
@@ -556,12 +558,12 @@ export default class PinchZoomPan extends React.Component {
         const upperBoundFactor = 1.0 + tolerance;
         const top = 
             overflow.height ? constrain(negate(overflow.height) * upperBoundFactor, overflow.height * upperBoundFactor - overflow.height, requestedTransform.top)
-            : position === 'center' ? (containerDimensions.height - (imageDimensions.height * scale)) / 2
+            : position === 'center' ? (containerDimensions && containerDimensions.height - (imageDimensions && imageDimensions.height * scale)) / 2
             : initialTop || 0;
 
         const left = 
             overflow.width ? constrain(negate(overflow.width) * upperBoundFactor, overflow.width * upperBoundFactor - overflow.width, requestedTransform.left)
-            : position === 'center' ? (containerDimensions.width - (imageDimensions.width * scale)) / 2
+            : position === 'center' ? (containerDimensions && containerDimensions.width - (imageDimensions && imageDimensions.width * scale)) / 2
             : initialLeft || 0;
 
         const constrainedTransform = {
