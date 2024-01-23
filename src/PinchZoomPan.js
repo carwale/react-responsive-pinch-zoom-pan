@@ -714,12 +714,13 @@ export default class PinchZoomPan extends React.Component {
     calculateNegativeSpace(scale) {
         //get difference in dimension between container and scaled image
         const { containerDimensions, imageDimensions } = this.state;
-        const width = containerDimensions.width - (scale * imageDimensions.width);
-        const height = containerDimensions.height - (scale * imageDimensions.height);
-        return {
-            width,
-            height
-        };
+        if(containerDimensions && imageDimensions) {
+            const width = containerDimensions.width - (scale * imageDimensions.width);
+            const height = containerDimensions.height - (scale * imageDimensions.height);
+
+            return { width, height};
+        }
+        return { width: 0, height: 0};
     }
 
     cancelAnimation() {
