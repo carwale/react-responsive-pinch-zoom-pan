@@ -11,7 +11,7 @@ import { snapToTarget, negate, constrain, getPinchLength, getPinchMidpoint, getR
 const OVERZOOM_TOLERANCE = 0.05;
 const DOUBLE_TAP_THRESHOLD = 250;
 
-const isInitialized = (top, left, scale) => scale !== undefined && !isNaN(scale) && left !== undefined && !isNaN(left) && top !== undefined && !isNaN(top);
+const isInitialized = (top, left, scale) => scale !== undefined && left !== undefined && top !== undefined;
 
 const imageStyle = createSelector(
     state => state.top,
@@ -21,7 +21,6 @@ const imageStyle = createSelector(
         const style = {
             cursor: 'pointer',
         };
-        console.log(`*****Output is :  => imageStyle isInitialized:`, isInitialized(top, left, scale));
         return isInitialized(top, left, scale)
             ? {
                 ...style,
@@ -38,8 +37,7 @@ const imageOverflow = createSelector(
     state => state.imageDimensions,
     state => state.containerDimensions,
     (top, left, scale, imageDimensions, containerDimensions) => { 
-        console.log(`*****Output is :  => imageOverflow isInitialized:`,top, left, scale, isInitialized(top, left, scale,imageDimensions, containerDimensions));
-        if (!isInitialized(top, left, scale) && !imageDimensions && !containerDimensions) {
+        if (!isInitialized(top, left, scale)) {
             return '';
         } 
         return getImageOverflow(top, left, scale, imageDimensions, containerDimensions);
@@ -447,7 +445,6 @@ export default class PinchZoomPan extends React.Component {
     maybeHandleDimensionsChanged() {
         if (this.isImageReady) {
             const containerDimensions = getContainerDimensions(this.imageRef);
-            console.log(`*****Output is :  => PinchZoomPan => maybeHandleDimensionsChanged => containerDimensions:`, containerDimensions, imageDimensions)
             const imageDimensions = getDimensions(this.imageRef);
 
             if (!isEqualDimensions(containerDimensions, getDimensions(this.state.containerDimensions)) || 
@@ -470,6 +467,7 @@ export default class PinchZoomPan extends React.Component {
                         }
                     }
                 );
+                this.debug(`Dimensions changed: Container: ${containerDimensions.width}, ${containerDimensions.height}, Image: ${imageDimensions.width}, ${imageDimensions.height}`);
             }
         }
         else {
@@ -558,12 +556,12 @@ export default class PinchZoomPan extends React.Component {
         const upperBoundFactor = 1.0 + tolerance;
         const top = 
             overflow.height ? constrain(negate(overflow.height) * upperBoundFactor, overflow.height * upperBoundFactor - overflow.height, requestedTransform.top)
-            : position === 'center' ? (containerDimensions && containerDimensions.height - (imageDimensions && imageDimensions.height * scale)) / 2
+            : position === 'center' ? (containerDimensions.height - (imageDimensions.height * scale)) / 2
             : initialTop || 0;
 
         const left = 
             overflow.width ? constrain(negate(overflow.width) * upperBoundFactor, overflow.width * upperBoundFactor - overflow.width, requestedTransform.left)
-            : position === 'center' ? (containerDimensions && containerDimensions.width - (imageDimensions && imageDimensions.width * scale)) / 2
+            : position === 'center' ? (containerDimensions.width - (imageDimensions.width * scale)) / 2
             : initialLeft || 0;
 
         const constrainedTransform = {
@@ -716,13 +714,12 @@ export default class PinchZoomPan extends React.Component {
     calculateNegativeSpace(scale) {
         //get difference in dimension between container and scaled image
         const { containerDimensions, imageDimensions } = this.state;
-        if(containerDimensions && imageDimensions) {
-            const width = containerDimensions.width - (scale * imageDimensions.width);
-            const height = containerDimensions.height - (scale * imageDimensions.height);
-
-            return { width, height};
-        }
-        return { width: 0, height: 0};
+        const width = containerDimensions.width - (scale * imageDimensions.width);
+        const height = containerDimensions.height - (scale * imageDimensions.height);
+        return {
+            width,
+            height
+        };
     }
 
     cancelAnimation() {
