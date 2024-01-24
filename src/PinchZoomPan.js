@@ -11,7 +11,7 @@ import { snapToTarget, negate, constrain, getPinchLength, getPinchMidpoint, getR
 const OVERZOOM_TOLERANCE = 0.05;
 const DOUBLE_TAP_THRESHOLD = 250;
 
-const isInitialized = (top, left, scale) => scale !== undefined && left !== undefined && top !== undefined;
+const isInitialized = (top, left, scale) => !!scale && !!left && !!top;
 
 const imageStyle = createSelector(
     state => state.top,
@@ -38,7 +38,7 @@ const imageOverflow = createSelector(
     state => state.imageDimensions,
     state => state.containerDimensions,
     (top, left, scale, imageDimensions, containerDimensions) => { 
-        console.log(`*****Output is :  => imageOverflow isInitialized:`, isInitialized(top, left, scale));
+        console.log(`*****Output is :  => imageOverflow isInitialized:`,top, left, scale, isInitialized(top, left, scale,imageDimensions, containerDimensions));
         if (!isInitialized(top, left, scale) && !imageDimensions && !containerDimensions) {
             return '';
         } 
