@@ -11,7 +11,7 @@ import { snapToTarget, negate, constrain, getPinchLength, getPinchMidpoint, getR
 const OVERZOOM_TOLERANCE = 0.05;
 const DOUBLE_TAP_THRESHOLD = 250;
 
-const isInitialized = (top, left, scale) => !!scale && !!left && !!top;
+const isInitialized = (top, left, scale) => scale !== undefined && !isNaN(scale) && left !== undefined && !isNaN(left) && top !== undefined && !isNaN(top);
 
 const imageStyle = createSelector(
     state => state.top,
